@@ -5,6 +5,7 @@ from sklego.preprocessing import ColumnSelector
 from sklego.meta import GroupedPredictor
 from sklego.linear_model import LowessRegression
 from sklearn.linear_model import LinearRegression
+from sklego.preprocessing import RepeatingBasisFunction
 from matplotlib import pyplot as plt
 
 
@@ -52,11 +53,47 @@ lowess = LowessRegression(sigma=100, span=1)
 lowess = lowess.fit(df["time_index"].values.reshape(-1, 1), df.rentals)
 preds = lowess.predict(df["time_index"].values.reshape(-1, 1))
 
+# Plot predictions and actual time series
 fig, ax = plt.subplots(nrows=1, ncols=1)
 df.plot(kind="scatter", x="time_index", y="rentals", ax=ax)
 plt.plot(df.time_index, preds, color="orange")
-fig.savefig("rental_fig.png")
+fig.savefig("rental_lowess.png")
+
 
 ##############################################################
-# Lowess smoothing
+# Using repeating basis functions for prepossessing time series
 ##############################################################
+
+# Transform time feature and inspect rbf features.
+rbf = RepeatingBasisFunction(
+    n_periods=12,
+    remainder="drop",
+    column="time_index",
+    input_range=(1, 365),
+)
+rbf.fit(df)
+rbf_featrures = rbf.transform(df)
+print(rbf_featrures.shape)
+fig, ax = plt.subplots(nrows=1, ncols=1)
+pd.DataFrame(rbf_featrures).plot(ax=ax)
+fig.savefig('rbf_features.png')
+
+# Use rbf features in a pipeline.
+pipeline_rbf = Pipeline(
+    [
+        ("basis_funcs", RepeatingBasisFunction(
+            n_periods=12,
+            remainder="drop",
+            column="time_index",
+            input_range=(1, 365),
+        )),
+        ("regression", LinearRegression()),
+    ]
+)
+pred_rbf = pipeline_rbf.fit(df, df.rentals).predict(df)
+
+# Plot predictions and actual time series
+fig, ax = plt.subplots(nrows=1, ncols=1)
+df.plot(kind="scatter", x="time_index", y="rentals", ax=ax)
+plt.plot(df.time_index, pred_rbf, color="orange")
+fig.savefig("rental_rbf.png")
