@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 from sklearn.pipeline import Pipeline
 from sklego.preprocessing import ColumnSelector
 from sklego.meta import GroupedPredictor
@@ -21,7 +20,7 @@ df = load_data().pipe(create_features)
 
 ##############################################################
 # Grouped predictor
-# Create seperate model for seperate groups.
+# Create separate model for separate groups.
 ##############################################################
 features = ["day", "mnth", "year", "season", "holiday", "weekday"]
 group_features = ["season"]
@@ -72,10 +71,10 @@ rbf = RepeatingBasisFunction(
     input_range=(1, 365),
 )
 rbf.fit(df)
-rbf_featrures = rbf.transform(df)
-print(rbf_featrures.shape)
+rbf_features = rbf.transform(df)
+print(rbf_features.shape)
 fig, ax = plt.subplots(nrows=1, ncols=1)
-pd.DataFrame(rbf_featrures).plot(ax=ax)
+pd.DataFrame(rbf_features).plot(ax=ax)
 fig.savefig('rbf_features.png')
 
 # Use rbf features in a pipeline.
