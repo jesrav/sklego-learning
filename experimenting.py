@@ -28,11 +28,12 @@ group_features = ["season"]
 regressor = GroupedPredictor(LinearRegression(), groups=group_features)
 
 pipeline = Pipeline(
-    [("grap_cols", ColumnSelector(features)), ("regression", regressor)]
+    [("grab_cols", ColumnSelector(features)), ("regression", regressor)]
 )
 pipeline.fit(df, df.rentals)
-
 y_hat = pipeline.predict(df)
+
+# Lets try to shuffle the features
 y_hat_shuffled_features = pipeline.predict(
     df[["holiday", "weekday", "day", "mnth", "year", "season"]]
 )
